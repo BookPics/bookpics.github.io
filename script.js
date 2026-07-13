@@ -1617,7 +1617,7 @@
     buildCatPills();
     buildCatImages(activeCat);
     //imagem inicial
-    loadImage("images/landing.png", true);
+    loadImage("./images/landing.png", true);
     // começar a pulsar se não escolher imagem
     document.getElementById("img-picker").classList.add("awaiting");
     
