@@ -1712,7 +1712,7 @@
       renderRows();
     }
 
-    fetch("https://api.hits.sh/hits/bookpics")
+    fetch("https://bookpics-counter.bookpics.workers.dev")
       .then(r => r.json())
       .then(data => {
         const el = document.getElementById("visitor-count");
