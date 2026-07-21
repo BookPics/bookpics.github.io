@@ -1548,12 +1548,19 @@
       full.onload = () => {
         bgImage = full;
         if (!isDefault) {
-          document.getElementById("img-picker").classList.remove("awaiting");
+          document.getElementById("select-book-pic-btn").classList.remove("awaiting");
+          const mobImgBtn = document.getElementById("mob-btn-image");
+          if (mobImgBtn) mobImgBtn.classList.remove("awaiting");
         }
         drawCanvas();
       };
       full.src = path;
     }
+
+    document.getElementById("select-book-pic-btn").addEventListener("click", () => {
+      document.getElementById("img-picker-body").style.display = "block";
+      document.getElementById("select-book-pic-btn").style.display = "none";
+    });
 
     function buildCatPills() {
       const pillsEl = document.getElementById("cat-pills");
@@ -1619,7 +1626,9 @@
     //imagem inicial
     loadImage("images/landing.png", true);
     // começar a pulsar se não escolher imagem
-    document.getElementById("img-picker").classList.add("awaiting");
+    document.getElementById("select-book-pic-btn").classList.add("awaiting");
+    const mobImgBtn = document.getElementById("mob-btn-image");
+    if (mobImgBtn) mobImgBtn.classList.add("awaiting");
     
 // MUDAR MANUAL
     // upload
@@ -1632,7 +1641,9 @@
         img.onload = () => {
           document.querySelectorAll("#cat-images img").forEach(i => i.classList.remove("on"));
           bgImage = img;
-          document.getElementById("img-picker").classList.remove("awaiting");
+          document.getElementById("select-book-pic-btn").classList.remove("awaiting");
+          const mobImgBtn = document.getElementById("mob-btn-image");
+          if (mobImgBtn) mobImgBtn.classList.remove("awaiting");
           drawCanvas();
         };
         img.src = evt.target.result;
@@ -1721,5 +1732,398 @@
         }
       })
       .catch(() => {});
+
+    // ── MOBILE ─────────────────────────────────────────────────────────
+
+    function mobImageContent() {
+      const el = document.getElementById("mobile-panel-content");
+      el.innerHTML = "";
+
+      const uploadLabel = document.createElement("label");
+      uploadLabel.id = "mob-upload-btn";
+      uploadLabel.textContent = "↑ Upload your image";
+      const uploadInput = document.createElement("input");
+      uploadInput.type = "file";
+      uploadInput.accept = "image/*";
+      uploadInput.style.display = "none";
+      uploadInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = evt => {
+          const img = new Image();
+          img.onload = () => { bgImage = img; document.getElementById("img-picker").classList.remove("awaiting"); drawCanvas(); closeMobilePanel(); };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+        e.target.value = "";
+      });
+      uploadLabel.appendChild(uploadInput);
+      el.appendChild(uploadLabel);
+
+      const pillsDiv = document.createElement("div");
+      pillsDiv.id = "mob-cat-pills";
+      let mobActiveCat = Object.keys(GALLERY)[0];
+
+      function buildMobImages(cat) {
+        imagesDiv.innerHTML = "";
+        const { folder, images } = GALLERY[cat];
+        images.forEach((item, idx) => {
+          const path = `images/${folder}/${item.file}`;
+          const wrapper = document.createElement("div");
+          wrapper.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;";
+          const img = document.createElement("img");
+          img.src = path;
+          img.alt = item.title || "";
+          if (idx === 0) img.classList.add("on");
+          const label = document.createElement("div");
+          const autoTitle = item.file.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
+          label.textContent = item.title || autoTitle;
+          label.style.cssText = "font-size:9px;color:var(--sub);font-family:'DM Mono',monospace;text-align:center;";
+          wrapper.addEventListener("click", () => {
+            document.querySelectorAll("#mob-cat-images img").forEach(i => i.classList.remove("on"));
+            img.classList.add("on");
+            loadImage(path);
+            closeMobilePanel();
+          });
+          wrapper.appendChild(img);
+          wrapper.appendChild(label);
+          imagesDiv.appendChild(wrapper);
+        });
+      }
+
+      Object.keys(GALLERY).forEach(cat => {
+        const pill = document.createElement("button");
+        pill.className = "cat-pill" + (cat === mobActiveCat ? " on" : "");
+        pill.textContent = GALLERY[cat].display || cat;
+        pill.addEventListener("click", () => {
+          document.querySelectorAll("#mob-cat-pills .cat-pill").forEach(p => p.classList.remove("on"));
+          pill.classList.add("on");
+          mobActiveCat = cat;
+          buildMobImages(cat);
+        });
+        pillsDiv.appendChild(pill);
+      });
+      el.appendChild(pillsDiv);
+
+      const imagesDiv = document.createElement("div");
+      imagesDiv.id = "mob-cat-images";
+      el.appendChild(imagesDiv);
+      buildMobImages(mobActiveCat);
+    }
+
+    function mobFontContent() {
+      const el = document.getElementById("mobile-panel-content");
+      const box = textBoxes.find(b => b.id === selectedId);
+      if (!box) return;
+      el.innerHTML = `
+        <div class="row" style="position:relative;">
+          <label class="lbl">Font</label>
+          <button type="button" id="mob-font-btn" class="sel" style="text-align:left;display:flex;justify-content:space-between;align-items:center;">
+            <span id="mob-font-btn-label" style="font-family:'${box.fontFamily}',sans-serif">${box.fontFamily}</span>
+            <span style="opacity:.5;font-size:8px">▾</span>
+          </button>
+        </div>
+        <div class="row">
+          <label class="lbl">Color</label>
+          <div class="color-row">
+            <input type="color" id="mob-ctrl-color" value="${box.fontColor}">
+            <input type="text" id="mob-ctrl-color-hex" value="${box.fontColor}" maxlength="7">
+          </div>
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Size</label>
+            <span class="sld-val" id="mob-ctrl-size-val">${box.fontSize}px</span>
+          </div>
+          <input type="range" id="mob-ctrl-size-range" min="8" max="140" value="${box.fontSize}">
+        </div>
+        <div class="row">
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+            <button class="tgb ${box.fontWeight === 'bold' ? 'on' : ''}" id="mob-bold">Bold</button>
+            <div style="width:1px;height:18px;background:var(--border);flex-shrink:0;"></div>
+            <button class="tgb ${box.fontStyle === 'italic' ? 'on' : ''}" id="mob-italic" style="font-style:italic">Italic</button>
+            <div style="width:1px;height:18px;background:var(--border);flex-shrink:0;"></div>
+            <button class="tgb ${box.textAlign === 'left' ? 'on' : ''}" id="mob-align-left" title="Left">
+              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 20">format_align_left</span>
+            </button>
+            <button class="tgb ${box.textAlign === 'center' ? 'on' : ''}" id="mob-align-center" title="Centre">
+              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 20">format_align_center</span>
+            </button>
+            <button class="tgb ${box.textAlign === 'right' ? 'on' : ''}" id="mob-align-right" title="Right">
+              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 20">format_align_right</span>
+            </button>
+            <button class="tgb ${box.textAlign === 'justify' ? 'on' : ''}" id="mob-align-justify" title="Justify">
+              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 20">format_align_justify</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("mob-ctrl-color").addEventListener("input", e => {
+        document.getElementById("mob-ctrl-color-hex").value = e.target.value;
+        updateBox("fontColor", e.target.value);
+      });
+      document.getElementById("mob-ctrl-color-hex").addEventListener("input", e => {
+        if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) {
+          document.getElementById("mob-ctrl-color").value = e.target.value;
+          updateBox("fontColor", e.target.value);
+        }
+      });
+      document.getElementById("mob-ctrl-size-range").addEventListener("input", e => {
+        const v = Math.round(parseFloat(e.target.value));
+        document.getElementById("mob-ctrl-size-val").textContent = v + "px";
+        updateBox("fontSize", v);
+      });
+      document.getElementById("mob-bold").addEventListener("click", () => {
+        const box = textBoxes.find(b => b.id === selectedId);
+        const newVal = box && box.fontWeight === "bold" ? "normal" : "bold";
+        updateBox("fontWeight", newVal);
+        document.getElementById("mob-bold").classList.toggle("on", newVal === "bold");
+      });
+      document.getElementById("mob-italic").addEventListener("click", () => {
+        const box = textBoxes.find(b => b.id === selectedId);
+        const newVal = box && box.fontStyle === "italic" ? "normal" : "italic";
+        updateBox("fontStyle", newVal);
+        document.getElementById("mob-italic").classList.toggle("on", newVal === "italic");
+      });
+      ["left","center","right","justify"].forEach(align => {
+        document.getElementById(`mob-align-${align}`).addEventListener("click", () => {
+          updateBox("textAlign", align);
+          ["left","center","right","justify"].forEach(a => {
+            document.getElementById(`mob-align-${a}`).classList.toggle("on", a === align);
+          });
+        });
+      });
+    }
+
+    function mobSpacingContent() {
+      const el = document.getElementById("mobile-panel-content");
+      const box = textBoxes.find(b => b.id === selectedId);
+      if (!box) return;
+      el.innerHTML = `
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Letter Spacing</label>
+            <span class="sld-val" id="mob-ls-val">${box.letterSpacing || 0}px</span>
+          </div>
+          <input type="range" id="mob-ls-range" min="-5" max="20" step="0.5" value="${box.letterSpacing || 0}">
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Word Spacing</label>
+            <span class="sld-val" id="mob-ws-val">${box.wordSpacing || 0}px</span>
+          </div>
+          <input type="range" id="mob-ws-range" min="-10" max="40" step="0.5" value="${box.wordSpacing || 0}">
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Line Height</label>
+            <span class="sld-val" id="mob-lh-val">${box.lineHeight || 1.35}</span>
+          </div>
+          <input type="range" id="mob-lh-range" min="0.8" max="3" step="0.05" value="${box.lineHeight || 1.35}">
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Blur</label>
+            <span class="sld-val" id="mob-blur-val">${box.blur || 0}px</span>
+          </div>
+          <input type="range" id="mob-blur-range" min="0" max="2" step="0.1" value="${box.blur || 0}">
+        </div>
+      `;
+
+      document.getElementById("mob-ls-range").addEventListener("input", e => {
+        const v = parseFloat(e.target.value);
+        document.getElementById("mob-ls-val").textContent = v + "px";
+        updateBox("letterSpacing", v);
+      });
+      document.getElementById("mob-ws-range").addEventListener("input", e => {
+        const v = parseFloat(e.target.value);
+        document.getElementById("mob-ws-val").textContent = v + "px";
+        updateBox("wordSpacing", v);
+      });
+      document.getElementById("mob-lh-range").addEventListener("input", e => {
+        const v = parseFloat(e.target.value);
+        document.getElementById("mob-lh-val").textContent = v.toFixed(2);
+        updateBox("lineHeight", v);
+      });
+      document.getElementById("mob-blur-range").addEventListener("input", e => {
+        const v = parseFloat(e.target.value);
+        document.getElementById("mob-blur-val").textContent = v + "px";
+        updateBox("blur", v);
+      });
+    }
+
+    function mobTransformContent() {
+      const el = document.getElementById("mobile-panel-content");
+      const box = textBoxes.find(b => b.id === selectedId);
+      if (!box) return;
+      el.innerHTML = `
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Rotation</label>
+            <span class="sld-val" id="mob-rot-val">${(box.rotation || 0).toFixed(1)}°</span>
+          </div>
+          <input type="range" id="mob-rot-range" min="-180" max="180" step="0.1" value="${box.rotation || 0}">
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Arch</label>
+            <span class="sld-val" id="mob-arch-val">${box.arch || 0}</span>
+          </div>
+          <input type="range" id="mob-arch-range" min="-100" max="100" value="${box.arch || 0}">
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Peak Position</label>
+            <span class="sld-val" id="mob-peak-val">${box.archPeak || 50}</span>
+          </div>
+          <input type="range" id="mob-peak-range" min="0" max="100" value="${box.archPeak || 50}">
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Straighten Arch</label>
+            <span class="sld-val" id="mob-sa-val">${box.straightenArch || 50}</span>
+          </div>
+          <input type="range" id="mob-sa-range" min="0" max="100" value="${box.straightenArch || 50}">
+        </div>
+      `;
+
+      document.getElementById("mob-rot-range").addEventListener("input", e => {
+        const v = parseFloat(e.target.value);
+        document.getElementById("mob-rot-val").textContent = v.toFixed(1) + "°";
+        updateBox("rotation", v);
+      });
+      document.getElementById("mob-arch-range").addEventListener("input", e => {
+        const v = Math.round(parseFloat(e.target.value));
+        document.getElementById("mob-arch-val").textContent = v;
+        updateBox("arch", v);
+      });
+      document.getElementById("mob-peak-range").addEventListener("input", e => {
+        const v = Math.round(parseFloat(e.target.value));
+        document.getElementById("mob-peak-val").textContent = v;
+        updateBox("archPeak", v);
+      });
+      document.getElementById("mob-sa-range").addEventListener("input", e => {
+        const v = Math.round(parseFloat(e.target.value));
+        document.getElementById("mob-sa-val").textContent = v;
+        updateBox("straightenArch", v);
+      });
+    }
+
+    let activeMobPanel = null;
+
+    function openMobilePanel(name, title, contentFn) {
+      if (activeMobPanel === name) {
+        closeMobilePanel();
+        return;
+      }
+      activeMobPanel = name;
+      document.getElementById("mobile-panel-title").textContent = title;
+      document.getElementById("mobile-panel-content").innerHTML = "";
+      contentFn();
+      document.getElementById("mobile-panel").style.height = "";
+      document.getElementById("mobile-panel").classList.add("open");
+      document.querySelectorAll(".mob-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById("mob-btn-" + name).classList.add("active");
+    }
+
+    function closeMobilePanel() {
+      activeMobPanel = null;
+      document.getElementById("mobile-panel").classList.remove("open");
+      document.querySelectorAll(".mob-btn").forEach(b => b.classList.remove("active"));
+    }
+
+    (function() {
+      const handle = document.getElementById("mobile-panel");
+      const dragHandle = document.getElementById("mobile-panel-handle");
+      if (!handle || !dragHandle) return;
+
+      let startY = 0;
+      let startHeight = 0;
+      const minHeightVh = 15;
+      const maxHeightVh = 70;
+      const dismissThreshold = 100;
+
+      dragHandle.addEventListener("touchstart", e => {
+        startY = e.touches[0].clientY;
+        startHeight = handle.getBoundingClientRect().height;
+        handle.style.transition = "none";
+      }, { passive: true });
+
+      dragHandle.addEventListener("touchmove", e => {
+        const deltaY = e.touches[0].clientY - startY;
+        const newHeightPx = startHeight - deltaY;
+        const vh = window.innerHeight;
+        const newHeightVh = Math.max(minHeightVh, Math.min(maxHeightVh, (newHeightPx / vh) * 100));
+        handle.style.height = newHeightVh + "vh";
+      }, { passive: true });
+
+      dragHandle.addEventListener("touchend", e => {
+        handle.style.transition = "";
+        const currentHeight = handle.getBoundingClientRect().height;
+        const vh = window.innerHeight;
+
+        if (startHeight - currentHeight < -dismissThreshold ||
+            (currentHeight / vh) * 100 < minHeightVh + 3) {
+          closeMobilePanel();
+          handle.style.height = "";
+        }
+      });
+    })();
+
+    function updateMobileBar() {
+      const hasSelection = !!selectedId;
+      ["font", "spacing", "transform", "delete"].forEach(name => {
+        const btn = document.getElementById("mob-btn-" + name);
+        if (btn) btn.style.display = hasSelection ? "flex" : "none";
+      });
+      if (!hasSelection && ["font","spacing","transform"].includes(activeMobPanel)) {
+        closeMobilePanel();
+      }
+    }
+
+    if (document.getElementById("mob-btn-image")) {
+      document.getElementById("mob-btn-image").addEventListener("click", () => {
+        openMobilePanel("image", "Background Image", mobImageContent);
+      });
+
+      document.getElementById("mob-btn-add").addEventListener("click", () => {
+        closeMobilePanel();
+        document.getElementById("btn-add").click();
+      });
+
+      document.getElementById("mob-btn-font").addEventListener("click", () => {
+        openMobilePanel("font", "Font & Style", mobFontContent);
+      });
+
+      document.getElementById("mob-btn-spacing").addEventListener("click", () => {
+        openMobilePanel("spacing", "Spacing", mobSpacingContent);
+      });
+
+      document.getElementById("mob-btn-transform").addEventListener("click", () => {
+        openMobilePanel("transform", "Transform", mobTransformContent);
+      });
+
+      document.getElementById("mob-btn-delete").addEventListener("click", () => {
+        closeMobilePanel();
+        document.getElementById("btn-delete").click();
+      });
+
+      document.getElementById("mob-btn-download").addEventListener("click", () => {
+        closeMobilePanel();
+        document.getElementById("btn-download").click();
+      });
+
+      canvas.addEventListener("touchstart", () => {
+        if (activeMobPanel && activeMobPanel !== "image") closeMobilePanel();
+      });
+    }
+
+    const _origSyncSidebar = syncSidebar;
+    syncSidebar = function() {
+      _origSyncSidebar();
+      if (window.innerWidth <= 1024) updateMobileBar();
+    };
 
     buildLeaderboard();

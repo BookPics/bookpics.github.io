@@ -44,19 +44,30 @@
     </div>
   </div>
 
+  <div id="mobile-ticker">
+    <div id="mobile-ticker-track"></div>
+  </div>
+
   <div id="workspace">
     <div id="panel">
       <div id="img-picker">
-        <span id="img-picker-label">Select Background Image</span>
+        <button id="select-book-pic-btn" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px 0;border-radius:6px;border:1px solid var(--text);background:var(--text);color:var(--bg);font-size:14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;letter-spacing:.03em;cursor:pointer;transition:opacity .15s;margin-bottom:10px;">
+          <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24">imagesmode</span>
+          Select a Book Pic
+        </button>
 
-        <label id="upload-btn" style="display:block;width:100%;padding:7px 0;text-align:center;border:1px dashed var(--border);border-radius:4px;cursor:pointer;font-size:10px;color:var(--sub);font-family:'DM Mono',monospace;letter-spacing:.05em;margin-bottom:8px;transition:all .15s;">
-          ↑ Upload your image
-          <input type="file" id="upload-input" accept="image/*" style="display:none;">
-        </label>
+        <div id="img-picker-body" style="display:none;">
+          <span id="img-picker-label">Select Background Image</span>
 
-        <div id="cat-pills"></div>
+          <label id="upload-btn" style="display:block;width:100%;padding:7px 0;text-align:center;border:1px dashed var(--border);border-radius:4px;cursor:pointer;font-size:10px;color:var(--sub);font-family:'DM Mono',monospace;letter-spacing:.05em;margin-bottom:8px;transition:all .15s;">
+            ↑ Upload your image
+            <input type="file" id="upload-input" accept="image/*" style="display:none;">
+          </label>
 
-        <div id="cat-images"></div>
+          <div id="cat-pills"></div>
+
+          <div id="cat-images"></div>
+        </div>
       </div>
 
       <div id="panel-scroll">
@@ -369,7 +380,44 @@
     </div>
   </div>
 
+  <!-- MOBILE -->
+  <div id="mobile-bar">
+    <button class="mob-btn" id="mob-btn-image">
+      <span class="material-symbols-outlined">photo_library</span>
+      <span class="mob-label">Image</span>
+    </button>
+    <button class="mob-btn" id="mob-btn-add">
+      <span class="material-symbols-outlined">add_box</span>
+      <span class="mob-label">Add Text</span>
+    </button>
+    <button class="mob-btn" id="mob-btn-delete" style="display:none">
+      <span class="material-symbols-outlined">delete</span>
+      <span class="mob-label">Delete</span>
+    </button>
+    <button class="mob-btn" id="mob-btn-font" style="display:none">
+      <span class="material-symbols-outlined">format_size</span>
+      <span class="mob-label">Font</span>
+    </button>
+    <button class="mob-btn" id="mob-btn-spacing" style="display:none">
+      <span class="material-symbols-outlined">format_line_spacing</span>
+      <span class="mob-label">Spacing</span>
+    </button>
+    <button class="mob-btn" id="mob-btn-transform" style="display:none">
+      <span class="material-symbols-outlined">tune</span>
+      <span class="mob-label">Transform</span>
+    </button>
+    <button class="mob-btn" id="mob-btn-download">
+      <span class="material-symbols-outlined">download</span>
+      <span class="mob-label">Download</span>
+    </button>
+  </div>
+  <div id="mobile-panel">
+    <div id="mobile-panel-handle"></div>
+    <div id="mobile-panel-title">Image</div>
+    <div id="mobile-panel-content"></div>
+  </div>
+
   <script src="script.js"></script>
-  
+
 </body>
 </html>
