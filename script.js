@@ -1676,8 +1676,10 @@
      
     ];
 
-    function buildLeaderboard() {
-      const el = document.getElementById("leaderboard");
+    function buildLeaderboard(targetId) {
+      const id = targetId || "leaderboard";
+      const el = document.getElementById(id);
+      if (!el) return;
       if (!LEADERBOARD.length) {
         el.innerHTML = `<div class="lb-empty">Be the first to appear here!</div>`;
         return;
