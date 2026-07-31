@@ -2126,4 +2126,58 @@
       if (window.innerWidth <= 1024) updateMobileBar();
     };
 
+    function buildTicker() {
+      const track = document.getElementById("mobile-ticker-track");
+      if (!track) return;
+
+      if (!LEADERBOARD.length) {
+        track.outerHTML = `<div class="ticker-empty" id="mobile-ticker-track">Be the first supporter of the month!</div>`;
+        return;
+      }
+
+      const items = [...LEADERBOARD, ...LEADERBOARD];
+      track.innerHTML = items.map(t => {
+        const link = t.socialLink || t.bookLink || "";
+        return `
+          <span class="ticker-item">
+            ${t.name}
+            ${link ? `<span class="material-symbols-outlined" data-link="${link}">open_in_new</span>` : ""}
+          </span>
+        `;
+      }).join("");
+
+      track.querySelectorAll("[data-link]").forEach(icon => {
+        icon.addEventListener("click", e => {
+          e.stopPropagation();
+          window.open(icon.dataset.link, "_blank");
+        });
+      });
+    }
+
+    const mobileTickerEl = document.getElementById("mobile-ticker");
+    if (mobileTickerEl) {
+      mobileTickerEl.addEventListener("click", () => {
+        openMobilePanel("community", "Community", mobCommunityContent);
+      });
+    }
+
+    function mobCommunityContent() {
+      const el = document.getElementById("mobile-panel-content");
+      el.innerHTML = `
+        <span class="rp-label"><span class="material-symbols-outlined" style="font-size:13px;color:#FF2D7A;vertical-align:middle;margin-right:4px;font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 20">favorite</span>Top Supporters of the Month</span>
+        <div id="mob-leaderboard"></div>
+        <a id="mob-kofi-btn" href="https://ko-fi.com/G0R722IESA" target="_blank">☕ Support me on Ko-fi</a>
+        <span class="rp-label">Affiliates and useful links</span>
+        <div id="mob-affiliates"></div>
+      `;
+      buildLeaderboard("mob-leaderboard");
+      const affSource = document.getElementById("right-panel-affiliates");
+      const affTarget = document.getElementById("mob-affiliates");
+      if (affSource && affTarget) {
+        const slots = affSource.querySelector(".aff-slots");
+        if (slots) affTarget.appendChild(slots.cloneNode(true));
+      }
+    }
+
+    buildTicker();
     buildLeaderboard();
