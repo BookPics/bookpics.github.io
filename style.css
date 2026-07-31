@@ -529,16 +529,20 @@
   #bar {
     height: 48px;
     padding: 0 12px;
+    justify-content: space-between;
   }
   #logo {
     font-size: 18px;
-    position: static;
-    transform: none;
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
   }
   #btn-theme {
-    position: static;
+    position: static !important;
+    left: auto !important;
     width: 36px;
     height: 36px;
+    order: -1;
   }
 
   #canvas-area {
