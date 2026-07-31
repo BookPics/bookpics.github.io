@@ -2142,7 +2142,7 @@
         const link = t.socialLink || t.bookLink || "";
         return `
           <span class="ticker-item">
-            ${t.name}
+            ${t.name}${t.handle ? ` · ${t.handle}` : ""}${t.amount ? ` · ${t.amount}` : ""}
             ${link ? `<span class="material-symbols-outlined" data-link="${link}">open_in_new</span>` : ""}
           </span>
         `;
