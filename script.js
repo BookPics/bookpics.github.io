@@ -2140,7 +2140,6 @@
       const items = [...LEADERBOARD];
       const intro = `<span class="ticker-item" style="font-weight:600;color:var(--text);">Top Supporters — check them out!</span>`;
       track.innerHTML = intro + items.map(t => {
-      track.innerHTML = items.map(t => {
         const link = t.socialLink || t.bookLink || "";
         return `
           <span class="ticker-item">
