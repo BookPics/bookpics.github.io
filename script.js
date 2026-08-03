@@ -1432,6 +1432,140 @@
     });
     canvas.addEventListener("mouseleave",()=>{drag=null;});
 
+    function showMobileEditButton(box) {
+      if (window.innerWidth > 1024) return;
+      const btn = document.getElementById("mobile-edit-text-btn");
+      if (!btn) return;
+
+      const cr = canvas.getBoundingClientRect();
+      const sx = cr.width / canvas.width, sy = cr.height / canvas.height;
+      const ar = canvasArea.getBoundingClientRect();
+
+        
+      const bottomCenter = localToWorld(0, box.height / 2 + 16, box);
+      btn.style.left = (cr.left - ar.left + bottomCenter.x * sx - btn.offsetWidth / 2) + "px";
+      btn.style.top  = (cr.top  - ar.top  + bottomCenter.y * sy) + "px";
+      btn.style.display = "flex";
+    }
+
+    function hideMobileEditButton() {
+      const btn = document.getElementById("mobile-edit-text-btn");
+      if (btn) btn.style.display = "none";
+    }
+
+    document.getElementById("mobile-edit-text-btn")?.addEventListener("click", e => {
+      e.stopPropagation();
+      const box = textBoxes.find(b => b.id === selectedId);
+      if (box) {
+        hideMobileEditButton();
+        enterEditMode(box);
+      }
+    });
+
+// ── touch ─────────────────────────────────────────
+    function getTouchXY(touch) {
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: (touch.clientX - r.left) * (canvas.width  / r.width),
+        y: (touch.clientY - r.top)  * (canvas.height / r.height),
+      };
+    }
+
+    let touchDrag = null;
+
+    canvas.addEventListener("touchstart", e => {
+      if (editMode) return;
+      const touch = e.touches[0];
+      const { x, y } = getTouchXY(touch);
+
+      hideMobileEditButton();
+
+      const hit = hitTest(x, y);
+      if (hit) {
+        e.preventDefault();
+        const prev = selectedId;
+        selectedId = hit.id;
+        const box = textBoxes.find(b => b.id === hit.id);
+        touchDrag = {
+          action: hit.action, id: hit.id, sx: x, sy: y, orig: { ...box },
+          startAngle: hit.action === "rotate" ? Math.atan2(y - (box.y + box.height / 2), x - (box.x + box.width / 2)) : 0,
+        };
+        if (selectedId !== prev) syncSidebar();
+        drawCanvas();
+        showMobileEditButton(box);
+      } else {
+        selectedId = null;
+        touchDrag = null;
+        syncSidebar();
+        drawCanvas();
+      }
+    }, { passive: false });
+
+    canvas.addEventListener("touchmove", e => {
+      if (!touchDrag) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const { x, y } = getTouchXY(touch);
+      const { action, id, sx, sy, orig, startAngle } = touchDrag;
+      const dx = x - sx, dy = y - sy;
+
+      if (action === "rotate") {
+        const cx = orig.x + orig.width / 2, cy = orig.y + orig.height / 2;
+        const currentAngle = Math.atan2(y - cy, x - cx);
+        const delta = (currentAngle - startAngle) * 180 / Math.PI;
+        const newRot = (orig.rotation || 0) + delta;
+        textBoxes = textBoxes.map(b => b.id === id ? { ...b, rotation: newRot } : b);
+      } else if (action === "move") {
+        let newBox = { ...orig, x: orig.x + dx, y: orig.y + dy };
+        if (snapEnabled && textBoxes.filter(b => b.id !== id).length > 0) {
+          const activeEdges = { left: true, right: true, centerX: true, top: true, bottom: true, centerY: true };
+          const snap = getSnap(newBox, activeEdges);
+          newBox.x += snap.dx;
+          newBox.y += snap.dy;
+          activeGuides = snap.guides;
+        } else {
+          activeGuides = [];
+        }
+        textBoxes = textBoxes.map(b => b.id === id ? newBox : b);
+      } else {
+        const resized = { ...applyResize(orig, action, dx, dy), manualWidth: true };
+        activeGuides = [];
+        textBoxes = textBoxes.map(b => b.id === id ? resized : b);
+      }
+
+      hideMobileEditButton();
+      drawCanvas();
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", () => {
+      activeGuides = [];
+      if (touchDrag && touchDrag.action !== "move" && touchDrag.action !== "rotate" && selectedId) {
+        const box = textBoxes.find(b => b.id === selectedId);
+        if (box) {
+          const tempCanvas = document.createElement("canvas");
+          const tempCtx = tempCanvas.getContext("2d");
+          tempCtx.font = [
+            box.fontStyle === "italic" ? "italic" : "",
+            box.fontWeight === "bold" ? "bold" : "",
+            box.fontSize + "px",
+            '"' + box.fontFamily + '"',
+          ].filter(Boolean).join(" ");
+          tempCtx.letterSpacing = (box.letterSpacing || 0) + "px";
+          tempCtx.wordSpacing   = (box.wordSpacing   || 0) + "px";
+          const lh = box.fontSize * (box.lineHeight || 1.35);
+          const lines = getLines(tempCtx, box.text, box.width - 12, box);
+          const newHeight = lines.length * lh + box.fontSize * 0.4;
+          textBoxes = textBoxes.map(b => b.id === selectedId ? { ...b, height: newHeight } : b);
+          drawCanvas();
+        }
+      }
+      if (touchDrag && selectedId) {
+        const box = textBoxes.find(b => b.id === selectedId);
+        if (box) showMobileEditButton(box);
+      }
+      touchDrag = null;
+    });
+
     document.addEventListener("mousedown",e=>{
       if(!editMode) return;
       if(e.target===canvas||editDiv?.contains(e.target)) return;
@@ -2092,7 +2226,14 @@
 
       document.getElementById("mob-btn-add").addEventListener("click", () => {
         closeMobilePanel();
-        document.getElementById("btn-add").click();
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const box = mkBox(centerX, centerY);
+        textBoxes.push(box);
+        selectedId = box.id;
+        document.fonts.load(`${box.fontSize}px "${box.fontFamily}"`).then(() => drawCanvas());
+        syncSidebar();
+        showMobileEditButton(box);
       });
 
       document.getElementById("mob-btn-font").addEventListener("click", () => {
