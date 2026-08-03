@@ -30,6 +30,11 @@
     const canvas     = document.getElementById("myCanvas");
     const ctx        = canvas.getContext("2d");
     const canvasArea = document.getElementById("canvas-area");
+
+    // tamanho canvas logic
+    let logicalWidth  = 820;
+    let logicalHeight = 520;
+
     const FONT_LIST = [
       // Sans Serif
       {name:"Roboto", cat:"Sans Serif"}, {name:"Open Sans", cat:"Sans Serif"},
@@ -120,8 +125,8 @@
     function getXY(e) {
       const r = canvas.getBoundingClientRect();
       return {
-        x: (e.clientX - r.left) * (canvas.width  / r.width),
-        y: (e.clientY - r.top)  * (canvas.height / r.height),
+        x: (e.clientX - r.left) * (logicalWidth  / r.width),
+        y: (e.clientY - r.top)  * (logicalHeight / r.height),
       };
     }
 
@@ -568,23 +573,40 @@
 
     // drawing
     function drawCanvas() {
-      ctx.clearRect(0, 0, 820, 520);
+      const dpr = window.devicePixelRatio || 1;
+
       if (bgImage) {
         const area = document.getElementById("canvas-area");
         const maxW = area.clientWidth  - 32;
         const maxH = area.clientHeight - 32;
         const s    = Math.min(maxW / bgImage.width, maxH / bgImage.height, 1);
-        canvas.width  = Math.round(bgImage.width  * s);
-        canvas.height = Math.round(bgImage.height * s);
-        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+        logicalWidth  = Math.round(bgImage.width  * s);
+        logicalHeight = Math.round(bgImage.height * s);
       } else {
-        ctx.fillStyle="#14120F"; ctx.fillRect(0,0,820,520);
+        logicalWidth  = 820;
+        logicalHeight = 520;
+      }
+
+      canvas.width  = Math.round(logicalWidth  * dpr);
+      canvas.height = Math.round(logicalHeight * dpr);
+      canvas.style.width  = logicalWidth  + "px";
+      canvas.style.height = logicalHeight + "px";
+        
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (bgImage) {
+        ctx.drawImage(bgImage, 0, 0, logicalWidth, logicalHeight);
+      } else {
+        ctx.fillStyle="#14120F"; ctx.fillRect(0,0,logicalWidth,logicalHeight);
         ctx.strokeStyle="rgba(255,255,255,.025)"; ctx.lineWidth=1;
-        for (let x=0;x<820;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,520);ctx.stroke();}
-        for (let y=0;y<520;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(820,y);ctx.stroke();}
+        for (let x=0;x<logicalWidth;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,logicalHeight);ctx.stroke();}
+        for (let y=0;y<logicalHeight;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(logicalWidth,y);ctx.stroke();}
         ctx.fillStyle="rgba(255,255,255,.18)"; ctx.font="12px 'DM Mono',monospace";
         ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.fillText("Select a background image from the panel",410,260);
+        ctx.fillText("Select a background image from the panel",logicalWidth/2,logicalHeight/2);
       }
       textBoxes.forEach(b => drawTBox(b, ctx, false));
       if (selectedId) { const s=textBoxes.find(b=>b.id===selectedId); if(s) drawHandles(s); }
@@ -831,7 +853,7 @@
       if (editMode) exitEditMode();
       editMode=true;
       const cr=canvas.getBoundingClientRect(), ar=canvasArea.getBoundingClientRect();
-      const sx=cr.width/canvas.width, sy=cr.height/canvas.height, sf=Math.min(sx,sy);
+      const sx=cr.width/logicalWidth, sy=cr.height/logicalHeight, sf=Math.min(sx,sy);
 
       editDiv=document.createElement("div");
       editDiv.contentEditable="true"; editDiv.spellcheck=false;
@@ -977,7 +999,7 @@
       if (!editMode||!editDiv||!selectedId) return;
       const box=textBoxes.find(b=>b.id===selectedId); if(!box) return;
       const cr=canvas.getBoundingClientRect(), ar=canvasArea.getBoundingClientRect();
-      const sx=cr.width/canvas.width, sy=cr.height/canvas.height, sf=Math.min(sx,sy);
+      const sx=cr.width/logicalWidth, sy=cr.height/logicalHeight, sf=Math.min(sx,sy);
       editDiv.style.left     = (cr.left - ar.left + box.x * sx) + "px";
       editDiv.style.top      = (cr.top  - ar.top  + box.y * sy) + "px";
       editDiv.style.width    = (box.width * sx) + "px";
@@ -1076,7 +1098,7 @@
         if(key==="lineHeight")    editDiv.style.lineHeight     = String(val);
         if(key==="fontSize"){
           const cr=canvas.getBoundingClientRect();
-          editDiv.style.fontSize=(val*Math.min(cr.width/canvas.width,cr.height/canvas.height))+"px";
+          editDiv.style.fontSize=(val*Math.min(cr.width/logicalWidth,cr.height/logicalHeight))+"px";
         }
       }
       drawCanvas();
@@ -1438,7 +1460,7 @@
       if (!btn) return;
 
       const cr = canvas.getBoundingClientRect();
-      const sx = cr.width / canvas.width, sy = cr.height / canvas.height;
+      const sx = cr.width / logicalWidth, sy = cr.height / logicalHeight;
       const ar = canvasArea.getBoundingClientRect();
 
         
@@ -1466,8 +1488,8 @@
     function getTouchXY(touch) {
       const r = canvas.getBoundingClientRect();
       return {
-        x: (touch.clientX - r.left) * (canvas.width  / r.width),
-        y: (touch.clientY - r.top)  * (canvas.height / r.height),
+        x: (touch.clientX - r.left) * (logicalWidth  / r.width),
+        y: (touch.clientY - r.top)  * (logicalHeight / r.height),
       };
     }
 
@@ -1622,8 +1644,8 @@
         octx.fillRect(0, 0, off.width, off.height);
       }
 
-      const scaleX = off.width  / canvas.width;
-      const scaleY = off.height / canvas.height;
+      const scaleX = off.width  / logicalWidth;
+      const scaleY = off.height / logicalHeight;
       const scaledBoxes = textBoxes.map(b => ({
         ...b,
         x:         b.x         * scaleX,
