@@ -2248,8 +2248,8 @@
 
       document.getElementById("mob-btn-add").addEventListener("click", () => {
         closeMobilePanel();
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
+        const centerX = logicalWidth / 2;
+        const centerY = logicalHeight / 2;
         const box = mkBox(centerX, centerY);
         textBoxes.push(box);
         selectedId = box.id;
