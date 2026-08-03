@@ -2155,6 +2155,30 @@
           window.open(icon.dataset.link, "_blank");
         });
       });
+
+      requestAnimationFrame(() => {
+        const contentWidth = track.scrollWidth;
+        const containerWidth = track.parentElement.offsetWidth;
+        const totalDistance = contentWidth;
+        const totalTravel = containerWidth + contentWidth;
+
+        const styleId = "ticker-dynamic-style";
+        let styleEl = document.getElementById(styleId);
+        if (styleEl) styleEl.remove();
+        styleEl = document.createElement("style");
+        styleEl.id = styleId;
+        styleEl.textContent = `
+          @keyframes ticker-scroll-dynamic {
+            0%   { transform: translateX(0); }
+            85%  { transform: translateX(-${totalDistance}px); }
+            100% { transform: translateX(-${totalDistance}px); }
+          }
+        `;
+        document.head.appendChild(styleEl);
+
+        const duration = Math.max(10, totalDistance / 60);
+        track.style.animation = `ticker-scroll-dynamic ${duration}s linear infinite`;
+      });
     }
 
     const mobileTickerEl = document.getElementById("mobile-ticker");
