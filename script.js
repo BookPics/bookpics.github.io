@@ -1628,6 +1628,7 @@
     document.getElementById("btn-delete").addEventListener("click",()=>{
       if(editMode) exitEditMode();
       textBoxes=textBoxes.filter(b=>b.id!==selectedId);selectedId=null;syncSidebar();drawCanvas();
+      hideMobileEditButton();
     });
 
     document.getElementById("btn-download").addEventListener("click",()=>{
@@ -2360,8 +2361,10 @@
         openMobilePanel("font", "Font & Style", mobFontContent);
       });
 
-      document.getElementById("mob-btn-spacing").addEventListener("click", () => {
-        openMobilePanel("spacing", "Spacing", mobSpacingContent);
+      document.getElementById("mob-btn-delete").addEventListener("click", () => {
+        closeMobilePanel();
+        hideMobileEditButton();
+        document.getElementById("btn-delete").click();
       });
 
       document.getElementById("mob-btn-transform").addEventListener("click", () => {
