@@ -2265,11 +2265,19 @@
         return;
       }
       activeMobPanel = name;
-      document.getElementById("mobile-panel-title").textContent = title;
-      document.getElementById("mobile-panel-content").innerHTML = "";
-      contentFn();
-      document.getElementById("mobile-panel").style.height = "";
-      document.getElementById("mobile-panel").classList.add("open");
+
+      const titleEl = document.getElementById("mobile-panel-title");
+      const contentEl = document.getElementById("mobile-panel-content");
+      const panelEl = document.getElementById("mobile-panel");
+
+      if (titleEl) titleEl.textContent = title;
+      if (contentEl) contentEl.innerHTML = "";
+      if (typeof contentFn === "function") contentFn();
+      if (panelEl) {
+        panelEl.style.height = "";
+        panelEl.classList.add("open");
+      }
+
       document.querySelectorAll(".mob-btn").forEach(b => b.classList.remove("active"));
       const activeBtn = document.getElementById("mob-btn-" + name);
       if (activeBtn) activeBtn.classList.add("active");
