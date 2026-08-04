@@ -630,23 +630,17 @@
     box-shadow: 0 -4px 24px rgba(0,0,0,.15);
   }
   #mobile-panel.open { display: flex; }
+  #mobile-panel-dragzone {
+    flex-shrink: 0;
+    touch-action: none;
+    cursor: grab;
+  }
   #mobile-panel-handle {
     width: 36px;
     height: 4px;
     background: var(--border);
     border-radius: 2px;
-    margin: 0 auto;
-    flex-shrink: 0;
-    touch-action: none;
-    position: relative;
-  }
-  #mobile-panel-handle::before {
-    content: "";
-    position: absolute;
-    top: -16px;
-    left: -30px;
-    right: -30px;
-    bottom: -16px;
+    margin: 10px auto 0;
   }
   #mobile-panel-title {
     font-size: 11px;
