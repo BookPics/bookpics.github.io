@@ -31,6 +31,10 @@
     const ctx        = canvas.getContext("2d");
     const canvasArea = document.getElementById("canvas-area");
 
+    document.fonts.load('24px "Material Symbols Outlined"').then(() => {
+      document.body.classList.add("fonts-loaded");
+    });
+
     // tamanho canvas logic
     let logicalWidth  = 820;
     let logicalHeight = 520;
