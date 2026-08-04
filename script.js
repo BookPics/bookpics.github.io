@@ -2294,18 +2294,19 @@
       const dismissThreshold = 100;
 
       dragHandle.addEventListener("touchstart", e => {
+        e.preventDefault();
         startY = e.touches[0].clientY;
         startHeight = handle.getBoundingClientRect().height;
         handle.style.transition = "none";
-      }, { passive: true });
-
+      }, { passive: false });
       dragHandle.addEventListener("touchmove", e => {
+        e.preventDefault();
         const deltaY = e.touches[0].clientY - startY;
         const newHeightPx = startHeight - deltaY;
         const vh = window.innerHeight;
         const newHeightVh = Math.max(minHeightVh, Math.min(maxHeightVh, (newHeightPx / vh) * 100));
         handle.style.height = newHeightVh + "vh";
-      }, { passive: true });
+      }, { passive: false });
 
       dragHandle.addEventListener("touchend", e => {
         handle.style.transition = "";
