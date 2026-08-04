@@ -2081,13 +2081,6 @@
           </div>
           <input type="range" id="mob-lh-range" min="0.8" max="3" step="0.05" value="${box.lineHeight || 1.35}">
         </div>
-        <div class="row">
-          <div class="sld-header">
-            <label class="lbl" style="margin:0">Blur</label>
-            <span class="sld-val" id="mob-blur-val">${box.blur || 0}px</span>
-          </div>
-          <input type="range" id="mob-blur-range" min="0" max="2" step="0.1" value="${box.blur || 0}">
-        </div>
       `;
 
       document.getElementById("mob-ls-range").addEventListener("input", e => {
@@ -2105,11 +2098,6 @@
         document.getElementById("mob-lh-val").textContent = v.toFixed(2);
         updateBox("lineHeight", v);
       });
-      document.getElementById("mob-blur-range").addEventListener("input", e => {
-        const v = parseFloat(e.target.value);
-        document.getElementById("mob-blur-val").textContent = v + "px";
-        updateBox("blur", v);
-      });
     }
 
     function mobTransformContent() {
@@ -2123,6 +2111,16 @@
             <span class="sld-val" id="mob-rot-val">${(box.rotation || 0).toFixed(1)}°</span>
           </div>
           <input type="range" id="mob-rot-range" min="-180" max="180" step="0.1" value="${box.rotation || 0}">
+        </div>
+        <div class="row">
+          <div class="sld-header">
+            <label class="lbl" style="margin:0">Blur</label>
+            <span class="sld-val" id="mob-blur-val">${box.blur || 0}px</span>
+          </div>
+          <input type="range" id="mob-blur-range" min="0" max="2" step="0.1" value="${box.blur || 0}">
+          <div style="font-size:11px;color:var(--sub);margin-top:5px;line-height:1.6;letter-spacing:.03em;">
+            Best results around 0.4px - 0.5px. <span style="color:#8B3A3A;">Apply blur last</span>, it will lag the editor.
+          </div>
         </div>
         <div class="row">
           <div class="sld-header">
@@ -2151,6 +2149,11 @@
         const v = parseFloat(e.target.value);
         document.getElementById("mob-rot-val").textContent = v.toFixed(1) + "°";
         updateBox("rotation", v);
+      });
+      document.getElementById("mob-blur-range").addEventListener("input", e => {
+        const v = parseFloat(e.target.value);
+        document.getElementById("mob-blur-val").textContent = v + "px";
+        updateBox("blur", v);
       });
       document.getElementById("mob-arch-range").addEventListener("input", e => {
         const v = Math.round(parseFloat(e.target.value));
