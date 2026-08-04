@@ -635,9 +635,18 @@
     height: 4px;
     background: var(--border);
     border-radius: 2px;
-    margin: 10px auto 0;
+    margin: 0 auto;
     flex-shrink: 0;
     touch-action: none;
+    position: relative;
+  }
+  #mobile-panel-handle::before {
+    content: "";
+    position: absolute;
+    top: -16px;
+    left: -30px;
+    right: -30px;
+    bottom: -16px;
   }
   #mobile-panel-title {
     font-size: 11px;
