@@ -1970,6 +1970,84 @@
       buildMobImages(mobActiveCat);
     }
 
+    function wireMobileFontPicker() {
+      const btn    = document.getElementById("mob-font-btn");
+      const panel  = document.getElementById("mob-font-panel");
+      const search = document.getElementById("mob-font-search");
+      const listEl = document.getElementById("mob-font-list");
+
+      function renderList(filter) {
+        const q = (filter || "").trim().toLowerCase();
+        const matches = FONT_LIST.filter(f => f.name.toLowerCase().includes(q));
+        const favs = matches.filter(f => favoriteFonts.includes(f.name));
+        const sans = matches.filter(f => f.cat === "Sans Serif");
+        const serif = matches.filter(f => f.cat === "Serif");
+
+        listEl.innerHTML = "";
+
+        function addGroup(label, fonts) {
+          if (!fonts.length) return;
+          const h = document.createElement("div");
+          h.className = "font-group-label";
+          h.textContent = label;
+          listEl.appendChild(h);
+          fonts.forEach(f => listEl.appendChild(makeRow(f)));
+        }
+
+        function makeRow(f) {
+          const row = document.createElement("div");
+          row.className = "font-row";
+
+          const star = document.createElement("span");
+          star.className = "star" + (favoriteFonts.includes(f.name) ? " on" : "");
+          star.textContent = favoriteFonts.includes(f.name) ? "★" : "☆";
+          star.addEventListener("click", e => {
+            e.stopPropagation();
+            toggleFavorite(f.name);
+            renderList(search.value);
+          });
+
+          const name = document.createElement("span");
+          name.className = "font-row-name";
+          name.textContent = f.name;
+          name.style.fontFamily = `"${f.name}", ${f.cat === "Serif" ? "serif" : "sans-serif"}`;
+
+          row.appendChild(star);
+          row.appendChild(name);
+
+          row.addEventListener("click", () => {
+            updateBox("fontFamily", f.name);
+            document.getElementById("mob-font-btn-label").textContent = f.name;
+            document.getElementById("mob-font-btn-label").style.fontFamily = `"${f.name}", ${f.cat === "Serif" ? "serif" : "sans-serif"}`;
+            panel.style.display = "none";
+          });
+
+          return row;
+        }
+
+        if (favs.length) addGroup("Favorites", favs);
+        addGroup("Serif", serif);
+        addGroup("Sans Serif", sans);
+
+        if (!matches.length) {
+          const empty = document.createElement("div");
+          empty.style.cssText = "padding:14px;font-size:11px;color:var(--sub);text-align:center;";
+          empty.textContent = "No fonts found";
+          listEl.appendChild(empty);
+        }
+      }
+
+      btn.addEventListener("click", () => {
+        const open = panel.style.display === "block";
+        panel.style.display = open ? "none" : "block";
+        if (!open) { renderList(""); search.value = ""; }
+      });
+
+      search.addEventListener("input", () => renderList(search.value));
+
+      renderList("");
+    }
+
     function mobFontContent() {
       const el = document.getElementById("mobile-panel-content");
       const box = textBoxes.find(b => b.id === selectedId);
@@ -1981,6 +2059,12 @@
             <span id="mob-font-btn-label" style="font-family:'${box.fontFamily}',sans-serif">${box.fontFamily}</span>
             <span style="opacity:.5;font-size:8px">▾</span>
           </button>
+          <div id="mob-font-panel" style="display:none;">
+            <div style="padding:6px;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);">
+              <input type="text" id="mob-font-search" placeholder="Search fonts…">
+            </div>
+            <div id="mob-font-list"></div>
+          </div>
         </div>
         <div class="row">
           <label class="lbl">Color</label>
@@ -2018,6 +2102,7 @@
         </div>
       `;
 
+      wireMobileFontPicker();
       document.getElementById("mob-ctrl-color").addEventListener("input", e => {
         document.getElementById("mob-ctrl-color-hex").value = e.target.value;
         updateBox("fontColor", e.target.value);
