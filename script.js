@@ -2292,7 +2292,6 @@
     (function() {
       const handle = document.getElementById("mobile-panel");
       const dragHandle = document.getElementById("mobile-panel-handle");
-      console.log("handle:", handle, "dragHandle:", dragHandle);
       if (!handle || !dragHandle) return;
 
       let startY = 0;
