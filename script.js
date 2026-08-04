@@ -2271,7 +2271,8 @@
       document.getElementById("mobile-panel").style.height = "";
       document.getElementById("mobile-panel").classList.add("open");
       document.querySelectorAll(".mob-btn").forEach(b => b.classList.remove("active"));
-      document.getElementById("mob-btn-" + name).classList.add("active");
+      const activeBtn = document.getElementById("mob-btn-" + name);
+      if (activeBtn) activeBtn.classList.add("active");
     }
 
     function closeMobilePanel() {
