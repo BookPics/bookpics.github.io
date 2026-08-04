@@ -649,7 +649,6 @@
     color: var(--text);
     text-align: center;
     padding: 8px 0 10px;
-    flex-shrink: 0;
     border-bottom: 1px solid var(--border);
     letter-spacing: .03em;
   }
