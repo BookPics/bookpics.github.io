@@ -2319,9 +2319,9 @@
         handle.style.transition = "";
         const currentHeight = handle.getBoundingClientRect().height;
         const vh = window.innerHeight;
-
-        if (startHeight - currentHeight < -dismissThreshold ||
-            (currentHeight / vh) * 100 < minHeightVh + 3) {
+        const heightVh = (currentHeight / vh) * 100;
+        const draggedDown = currentHeight < startHeight;
+        if (draggedDown && heightVh <= minHeightVh + 2) {
           closeMobilePanel();
           handle.style.height = "";
         }
